@@ -411,7 +411,7 @@ TYPED_TEST(CPPINTEROP_TEST_MODE, Interpreter_ExternalInterpreter) {
                             CLANG_VERSION_MAJOR_STRING);
     std::string ResourceDir = std::string(P.str());
     std::vector<const char *> ClingArgv = {"-resource-dir", ResourceDir.c_str(),
-                                          "-std=c++14"};
+                                           "-std=c++14"};
     ClingArgv.insert(ClingArgv.begin(), MainExecutableName.c_str());
     auto *ExtInterp = new compat::Interpreter(ClingArgv.size(), &ClingArgv[0]);
 #endif
