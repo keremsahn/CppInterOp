@@ -337,6 +337,53 @@ TYPED_TEST(CPPINTEROP_TEST_MODE, Interpreter_CodeCompletion) {
   EXPECT_EQ(2U, cnt); // float and foo
 }
 
+TYPED_TEST(CPPINTEROP_TEST_MODE, Interpreter_GetLanguageCpp) {
+  // Default interpreter (C++14)
+  TestFixture::CreateInterpreter();
+  EXPECT_EQ(Cpp::GetLanguage(), Cpp::InterpreterLanguage::CPlusPlus);
+}
+
+TYPED_TEST(CPPINTEROP_TEST_MODE, Interpreter_GetLanguageStandardCpp) {
+  // Other C++ standards
+  TestFixture::CreateInterpreter({"-std=c++14"});
+  EXPECT_EQ(Cpp::GetLanguageStandard(),
+            Cpp::InterpreterLanguageStandard::CPlusPlus14);
+
+  TestFixture::CreateInterpreter({"-std=c++17"});
+  EXPECT_EQ(Cpp::GetLanguageStandard(),
+            Cpp::InterpreterLanguageStandard::CPlusPlus17);
+
+  TestFixture::CreateInterpreter({"-std=c++20"});
+  EXPECT_EQ(Cpp::GetLanguageStandard(),
+            Cpp::InterpreterLanguageStandard::CPlusPlus20);
+}
+
+#ifndef CPPINTEROP_USE_CLING
+TYPED_TEST(CPPINTEROP_TEST_MODE, Interpreter_GetLanguageCAPI) {
+  auto* I = TestFixture::CreateInterpreter();
+  auto* CXI = clang_createInterpreterFromRawPtr(I);
+  EXPECT_EQ(clang_Interpreter_getLanguage(CXI),
+            CXInterpreterLanguage_CPlusPlus);
+  EXPECT_EQ(clang_Interpreter_getLanguageStandard(CXI),
+            CXInterpreterLanguageStandard_CPlusPlus14);
+  clang_Interpreter_dispose(CXI);
+}
+#endif
+
+TYPED_TEST(CPPINTEROP_TEST_MODE, Interpreter_GetLanguageC) {
+  TestFixture::CreateInterpreter({"-xc", "-std=c99"});
+  EXPECT_EQ(Cpp::GetLanguage(), Cpp::InterpreterLanguage::C);
+  EXPECT_EQ(Cpp::GetLanguageStandard(), Cpp::InterpreterLanguageStandard::C99);
+}
+TYPED_TEST(CPPINTEROP_TEST_MODE, Interpreter_GetLanguageStandardC) {
+  TestFixture::CreateInterpreter({"-xc", "-std=c89"});
+  EXPECT_EQ(Cpp::GetLanguageStandard(), Cpp::InterpreterLanguageStandard::C89);
+  TestFixture::CreateInterpreter({"-xc", "-std=c11"});
+  EXPECT_EQ(Cpp::GetLanguageStandard(), Cpp::InterpreterLanguageStandard::C11);
+  TestFixture::CreateInterpreter({"-xc", "-std=c17"});
+  EXPECT_EQ(Cpp::GetLanguageStandard(), Cpp::InterpreterLanguageStandard::C17);
+}
+
 TYPED_TEST(CPPINTEROP_TEST_MODE, Interpreter_ExternalInterpreter) {
 
   if (llvm::sys::RunningOnValgrind())

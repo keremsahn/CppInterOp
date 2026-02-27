@@ -397,6 +397,97 @@ void clang_Interpreter_unloadLibrary(CXInterpreter I, const char* lib_stem) {
   interp->getDynamicLibraryManager()->unloadLibrary(lib_stem);
 }
 
+CXInterpreterLanguage clang_Interpreter_getLanguage(CXInterpreter I) {
+  auto& LO = getInterpreter(I)->getCI()->getLangOpts();
+  switch (LO.LangStd) {
+  case clang::LangStandard::lang_c89:
+  case clang::LangStandard::lang_c94:
+  case clang::LangStandard::lang_gnu89:
+  case clang::LangStandard::lang_c99:
+  case clang::LangStandard::lang_gnu99:
+  case clang::LangStandard::lang_c11:
+  case clang::LangStandard::lang_gnu11:
+  case clang::LangStandard::lang_c17:
+  case clang::LangStandard::lang_gnu17:
+  case clang::LangStandard::lang_c23:
+  case clang::LangStandard::lang_gnu23:
+  case clang::LangStandard::lang_c2y:
+  case clang::LangStandard::lang_gnu2y:
+    return CXInterpreterLanguage_C;
+
+  case clang::LangStandard::lang_cxx98:
+  case clang::LangStandard::lang_gnucxx98:
+  case clang::LangStandard::lang_cxx11:
+  case clang::LangStandard::lang_gnucxx11:
+  case clang::LangStandard::lang_cxx14:
+  case clang::LangStandard::lang_gnucxx14:
+  case clang::LangStandard::lang_cxx17:
+  case clang::LangStandard::lang_gnucxx17:
+  case clang::LangStandard::lang_cxx20:
+  case clang::LangStandard::lang_gnucxx20:
+  case clang::LangStandard::lang_cxx23:
+  case clang::LangStandard::lang_gnucxx23:
+  case clang::LangStandard::lang_cxx26:
+  case clang::LangStandard::lang_gnucxx26:
+    return CXInterpreterLanguage_CPlusPlus;
+
+  default:
+    return CXInterpreterLanguage_Other;
+  }
+}
+
+CXInterpreterLanguageStandard
+clang_Interpreter_getLanguageStandard(CXInterpreter I) {
+  auto& LO = getInterpreter(I)->getCI()->getLangOpts();
+  switch (LO.LangStd) {
+  case clang::LangStandard::lang_cxx26:
+  case clang::LangStandard::lang_gnucxx26:
+    return CXInterpreterLanguageStandard_CPlusPlus26;
+  case clang::LangStandard::lang_cxx23:
+  case clang::LangStandard::lang_gnucxx23:
+    return CXInterpreterLanguageStandard_CPlusPlus23;
+  case clang::LangStandard::lang_cxx20:
+  case clang::LangStandard::lang_gnucxx20:
+    return CXInterpreterLanguageStandard_CPlusPlus20;
+  case clang::LangStandard::lang_cxx17:
+  case clang::LangStandard::lang_gnucxx17:
+    return CXInterpreterLanguageStandard_CPlusPlus17;
+  case clang::LangStandard::lang_cxx14:
+  case clang::LangStandard::lang_gnucxx14:
+    return CXInterpreterLanguageStandard_CPlusPlus14;
+  case clang::LangStandard::lang_cxx11:
+  case clang::LangStandard::lang_gnucxx11:
+    return CXInterpreterLanguageStandard_CPlusPlus11;
+  case clang::LangStandard::lang_cxx98:
+  case clang::LangStandard::lang_gnucxx98:
+    return CXInterpreterLanguageStandard_CPlusPlus98;
+
+  case clang::LangStandard::lang_c2y:
+  case clang::LangStandard::lang_gnu2y:
+    return CXInterpreterLanguageStandard_C2y;
+  case clang::LangStandard::lang_c23:
+  case clang::LangStandard::lang_gnu23:
+    return CXInterpreterLanguageStandard_C23;
+  case clang::LangStandard::lang_c17:
+  case clang::LangStandard::lang_gnu17:
+    return CXInterpreterLanguageStandard_C17;
+  case clang::LangStandard::lang_c11:
+  case clang::LangStandard::lang_gnu11:
+    return CXInterpreterLanguageStandard_C11;
+  case clang::LangStandard::lang_c99:
+  case clang::LangStandard::lang_gnu99:
+    return CXInterpreterLanguageStandard_C99;
+
+  case clang::LangStandard::lang_c89:
+  case clang::LangStandard::lang_c94:
+  case clang::LangStandard::lang_gnu89:
+    return CXInterpreterLanguageStandard_C89;
+
+  default:
+    return CXInterpreterLanguageStandard_Other;
+  }
+}
+
 CXString clang_Interpreter_searchLibrariesForSymbol(CXInterpreter I,
                                                     const char* mangled_name,
                                                     bool search_system) {

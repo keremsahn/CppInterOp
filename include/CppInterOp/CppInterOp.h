@@ -102,6 +102,27 @@ enum QualKind : unsigned char {
   Restrict = 1 << 2
 };
 
+/// Enum modelling programming languages.
+enum class InterpreterLanguage : unsigned char { C, CPlusPlus, Other };
+
+/// Enum modelling language standards.
+enum class InterpreterLanguageStandard : unsigned char {
+  C89,
+  C99,
+  C11,
+  C17,
+  C23,
+  C2y,
+  CPlusPlus98,
+  CPlusPlus11,
+  CPlusPlus14,
+  CPlusPlus17,
+  CPlusPlus20,
+  CPlusPlus23,
+  CPlusPlus26,
+  Other
+};
+
 inline QualKind operator|(QualKind a, QualKind b) {
   return static_cast<QualKind>(static_cast<unsigned char>(a) |
                                static_cast<unsigned char>(b));
@@ -727,6 +748,12 @@ CPPINTEROP_API bool ActivateInterpreter(TInterp_t I);
 /// matter, since the library will function in the same way.
 ///\returns the current interpreter instance, if any.
 CPPINTEROP_API TInterp_t GetInterpreter();
+
+/// Returns the programming language of the interpreter.
+CPPINTEROP_API InterpreterLanguage GetLanguage();
+
+/// Returns the language standard of the interpreter.
+CPPINTEROP_API InterpreterLanguageStandard GetLanguageStandard();
 
 /// Sets the Interpreter instance with an external interpreter, meant to
 /// be called by an external library that manages it's own interpreter.
