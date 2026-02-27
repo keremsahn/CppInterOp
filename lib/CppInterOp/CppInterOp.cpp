@@ -3487,6 +3487,91 @@ TInterp_t GetInterpreter() {
   return sInterpreters->back().Interpreter;
 }
 
+InterpreterLanguage GetLanguage() {
+  auto& LO = getInterp().getCI()->getLangOpts();
+  switch (LO.LangStd) {
+  case clang::LangStandard::lang_c89:
+  case clang::LangStandard::lang_c94:
+  case clang::LangStandard::lang_gnu89:
+  case clang::LangStandard::lang_c99:
+  case clang::LangStandard::lang_gnu99:
+  case clang::LangStandard::lang_c11:
+  case clang::LangStandard::lang_gnu11:
+  case clang::LangStandard::lang_c17:
+  case clang::LangStandard::lang_gnu17:
+  case clang::LangStandard::lang_c23:
+  case clang::LangStandard::lang_gnu23:
+  case clang::LangStandard::lang_c2y:
+  case clang::LangStandard::lang_gnu2y:
+    return InterpreterLanguage::C;
+  case clang::LangStandard::lang_cxx98:
+  case clang::LangStandard::lang_gnucxx98:
+  case clang::LangStandard::lang_cxx11:
+  case clang::LangStandard::lang_gnucxx11:
+  case clang::LangStandard::lang_cxx14:
+  case clang::LangStandard::lang_gnucxx14:
+  case clang::LangStandard::lang_cxx17:
+  case clang::LangStandard::lang_gnucxx17:
+  case clang::LangStandard::lang_cxx20:
+  case clang::LangStandard::lang_gnucxx20:
+  case clang::LangStandard::lang_cxx23:
+  case clang::LangStandard::lang_gnucxx23:
+  case clang::LangStandard::lang_cxx26:
+  case clang::LangStandard::lang_gnucxx26:
+    return InterpreterLanguage::CPlusPlus;
+  default:
+    return InterpreterLanguage::Other;
+  }
+}
+
+InterpreterLanguageStandard GetLanguageStandard() {
+  auto& LO = getInterp().getCI()->getLangOpts();
+  switch (LO.LangStd) {
+  case clang::LangStandard::lang_cxx26:
+  case clang::LangStandard::lang_gnucxx26:
+    return InterpreterLanguageStandard::CPlusPlus26;
+  case clang::LangStandard::lang_cxx23:
+  case clang::LangStandard::lang_gnucxx23:
+    return InterpreterLanguageStandard::CPlusPlus23;
+  case clang::LangStandard::lang_cxx20:
+  case clang::LangStandard::lang_gnucxx20:
+    return InterpreterLanguageStandard::CPlusPlus20;
+  case clang::LangStandard::lang_cxx17:
+  case clang::LangStandard::lang_gnucxx17:
+    return InterpreterLanguageStandard::CPlusPlus17;
+  case clang::LangStandard::lang_cxx14:
+  case clang::LangStandard::lang_gnucxx14:
+    return InterpreterLanguageStandard::CPlusPlus14;
+  case clang::LangStandard::lang_cxx11:
+  case clang::LangStandard::lang_gnucxx11:
+    return InterpreterLanguageStandard::CPlusPlus11;
+  case clang::LangStandard::lang_cxx98:
+  case clang::LangStandard::lang_gnucxx98:
+    return InterpreterLanguageStandard::CPlusPlus98;
+  case clang::LangStandard::lang_c2y:
+  case clang::LangStandard::lang_gnu2y:
+    return InterpreterLanguageStandard::C2y;
+  case clang::LangStandard::lang_c23:
+  case clang::LangStandard::lang_gnu23:
+    return InterpreterLanguageStandard::C23;
+  case clang::LangStandard::lang_c17:
+  case clang::LangStandard::lang_gnu17:
+    return InterpreterLanguageStandard::C17;
+  case clang::LangStandard::lang_c11:
+  case clang::LangStandard::lang_gnu11:
+    return InterpreterLanguageStandard::C11;
+  case clang::LangStandard::lang_c99:
+  case clang::LangStandard::lang_gnu99:
+    return InterpreterLanguageStandard::C99;
+  case clang::LangStandard::lang_c89:
+  case clang::LangStandard::lang_c94:
+  case clang::LangStandard::lang_gnu89:
+    return InterpreterLanguageStandard::C89;
+  default:
+    return InterpreterLanguageStandard::Other;
+  }
+}
+
 void UseExternalInterpreter(TInterp_t I) {
   assert(sInterpreters->empty() && "sInterpreter already in use!");
   sInterpreters->emplace_back(static_cast<compat::Interpreter*>(I),

@@ -88,6 +88,35 @@ typedef enum {
 } CXInterpreter_CompilationResult;
 
 /**
+ * Enum to represent the programming language of the interpreter.
+ */
+typedef enum {
+  CXInterpreterLanguage_C = 0,
+  CXInterpreterLanguage_CPlusPlus = 1,
+  CXInterpreterLanguage_Other = 2
+} CXInterpreterLanguage;
+
+/**
+ * Enum to represent the language standard of the interpreter.
+ */
+typedef enum {
+  CXInterpreterLanguageStandard_C89 = 0,
+  CXInterpreterLanguageStandard_C99 = 1,
+  CXInterpreterLanguageStandard_C11 = 2,
+  CXInterpreterLanguageStandard_C17 = 3,
+  CXInterpreterLanguageStandard_C23 = 4,
+  CXInterpreterLanguageStandard_C2y = 5,
+  CXInterpreterLanguageStandard_CPlusPlus98 = 6,
+  CXInterpreterLanguageStandard_CPlusPlus11 = 7,
+  CXInterpreterLanguageStandard_CPlusPlus14 = 8,
+  CXInterpreterLanguageStandard_CPlusPlus17 = 9,
+  CXInterpreterLanguageStandard_CPlusPlus20 = 10,
+  CXInterpreterLanguageStandard_CPlusPlus23 = 11,
+  CXInterpreterLanguageStandard_CPlusPlus26 = 12,
+  CXInterpreterLanguageStandard_Other = 13
+} CXInterpreterLanguageStandard;
+
+/**
  * Add a search path to the interpreter.
  *
  * \param I The interpreter.
@@ -209,6 +238,26 @@ CINDEX_LINKAGE CXInterpreter_CompilationResult clang_Interpreter_loadLibrary(
  */
 CINDEX_LINKAGE void clang_Interpreter_unloadLibrary(CXInterpreter I,
                                                     const char* lib_stem);
+
+/**
+ * Returns the programming language of the interpreter.
+ *
+ * \param I The interpreter.
+ *
+ * \returns CXInterpreterLanguage value.
+ */
+CINDEX_LINKAGE CXInterpreterLanguage
+clang_Interpreter_getLanguage(CXInterpreter I);
+
+/**
+ * Returns the language standard of the interpreter.
+ *
+ * \param I The interpreter.
+ *
+ * \returns CXInterpreterLanguageStandard value.
+ */
+CINDEX_LINKAGE CXInterpreterLanguageStandard
+clang_Interpreter_getLanguageStandard(CXInterpreter I);
 
 /**
  * @}
