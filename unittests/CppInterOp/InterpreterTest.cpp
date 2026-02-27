@@ -405,23 +405,22 @@ TYPED_TEST(CPPINTEROP_TEST_MODE, Interpreter_ExternalInterpreter) {
 #endif // CPPINTEROP_USE_REPL
 
 #ifdef CPPINTEROP_USE_CLING
-  std::string MainExecutableName = sys::fs::getMainExecutable(nullptr, nullptr);
-  llvm::SmallString<128> P(LLVM_BINARY_DIR);
-  llvm::sys::path::append(P, CLANG_INSTALL_LIBDIR_BASENAME, "clang",
-                          CLANG_VERSION_MAJOR_STRING);
-  std::string ResourceDir = std::string(P.str());
-  std::vector<const char*> ClingArgv = {"-resource-dir", ResourceDir.c_str(),
-                                        "-std=c++14"};
-  ClingArgv.insert(ClingArgv.begin(), MainExecutableName.c_str());
-  auto* ExtInterp = new compat::Interpreter(ClingArgv.size(), &ClingArgv[0]);
+    std::string MainExecutableName = sys::fs::getMainExecutable(nullptr, nullptr);
+    llvm::SmallString<128> P(LLVM_BINARY_DIR);
+    llvm::sys::path::append(P, CLANG_INSTALL_LIBDIR_BASENAME, "clang",
+                            CLANG_VERSION_MAJOR_STRING);
+    std::string ResourceDir = std::string(P.str());
+    std::vector<const char *> ClingArgv = {"-resource-dir", ResourceDir.c_str(),
+                                          "-std=c++14"};
+    ClingArgv.insert(ClingArgv.begin(), MainExecutableName.c_str());
+    auto *ExtInterp = new compat::Interpreter(ClingArgv.size(), &ClingArgv[0]);
 #endif
 
   EXPECT_NE(ExtInterp, nullptr);
 
 #if !defined(NDEBUG) && GTEST_HAS_DEATH_TEST
 #ifndef _WIN32 // Windows seems to fail to die...
-  EXPECT_DEATH(Cpp::UseExternalInterpreter(ExtInterp),
-               "sInterpreter already in use!");
+    EXPECT_DEATH(Cpp::UseExternalInterpreter(ExtInterp), "sInterpreter already in use!");
 #endif // _WIN32
 #endif
   EXPECT_TRUE(Cpp::GetInterpreter()) << "External Interpreter not set";
