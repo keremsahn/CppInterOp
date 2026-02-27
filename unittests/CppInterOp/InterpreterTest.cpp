@@ -69,7 +69,7 @@ TYPED_TEST(CPPINTEROP_TEST_MODE, Interpreter_Evaluate) {
     GTEST_SKIP() << "XFAIL due to Valgrind report";
   if (TypeParam::isOutOfProcess)
     GTEST_SKIP() << "Test fails for OOP JIT builds";
-  //  EXPECT_TRUE(Cpp::Evaluate(I, "") == 0);
+  // EXPECT_TRUE(Cpp::Evaluate(I, "") == 0);
   // EXPECT_TRUE(Cpp::Evaluate(I, "__cplusplus;") == 201402);
   // Due to a deficiency in the clang-repl implementation to get the value we
   // always must omit the ;
@@ -156,8 +156,7 @@ TYPED_TEST(CPPINTEROP_TEST_MODE, Interpreter_Process) {
     GTEST_SKIP() << "Test fails for OOP JIT builds";
   if (llvm::sys::RunningOnValgrind())
     GTEST_SKIP() << "XFAIL due to Valgrind report";
-  std::vector<const char*> interpreter_args = {"-include", "new", "-Xclang",
-                                               "-iwithsysroot/include/compat"};
+  std::vector<const char*> interpreter_args = {"-include", "new", "-Xclang", "-iwithsysroot/include/compat"};
   auto* I = TestFixture::CreateInterpreter(interpreter_args);
   EXPECT_TRUE(Cpp::Process("") == 0);
   EXPECT_TRUE(Cpp::Process("int a = 12;") == 0);
@@ -178,11 +177,15 @@ TYPED_TEST(CPPINTEROP_TEST_MODE, Interpreter_Process) {
 
 TYPED_TEST(CPPINTEROP_TEST_MODE, Interpreter_EmscriptenExceptionHandling) {
 #ifndef EMSCRIPTEN
-  GTEST_SKIP() << "This test is intended to check exception handling for "
-                  "Emscripten builds.";
+  GTEST_SKIP() << "This test is intended to check exception handling for Emscripten builds.";
 #endif
-  std::vector<const char*> Args = {"-std=c++20", "-v", "-fwasm-exceptions",
-                                   "-mllvm", "-wasm-enable-sjlj"};
+  std::vector<const char*> Args = {
+    "-std=c++20",
+    "-v",
+    "-fwasm-exceptions",
+    "-mllvm",
+    "-wasm-enable-sjlj"
+  };
 
   Cpp::CreateInterpreter(Args, {});
 
@@ -221,7 +224,7 @@ TYPED_TEST(CPPINTEROP_TEST_MODE, Interpreter_CreateInterpreter) {
 
 #ifndef CPPINTEROP_USE_CLING
   // C API
-  auto* CXI = clang_createInterpreterFromRawPtr(I);
+  auto *CXI = clang_createInterpreterFromRawPtr(I);
   auto CLI = clang_Interpreter_getClangInterpreter(CXI);
   EXPECT_TRUE(CLI);
 
@@ -245,7 +248,7 @@ TYPED_TEST(CPPINTEROP_TEST_MODE, Interpreter_CreateInterpreterCAPIFailure) {
   GTEST_SKIP() << "Disabled on Windows. Needs fixing.";
 #endif
   const char* argv[] = {"-fsyntax-only", "-Xclang", "-invalid-plugin"};
-  auto* CXI = clang_createInterpreter(argv, 3);
+  auto *CXI = clang_createInterpreter(argv, 3);
   EXPECT_EQ(CXI, nullptr);
 }
 #endif
@@ -312,7 +315,7 @@ TYPED_TEST(CPPINTEROP_TEST_MODE, Interpreter_IncludePaths) {
   Cpp::AddIncludePath("/non/existent/");
   Cpp::GetIncludePaths(includes);
   EXPECT_NE(std::find(includes.begin(), includes.end(), "/non/existent/"),
-            std::end(includes));
+             std::end(includes));
 }
 
 TYPED_TEST(CPPINTEROP_TEST_MODE, Interpreter_CodeCompletion) {
