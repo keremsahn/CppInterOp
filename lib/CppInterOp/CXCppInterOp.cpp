@@ -8,6 +8,7 @@
 #include "clang/AST/Mangle.h"
 #include "clang/AST/RecordLayout.h"
 #include "clang/AST/Type.h"
+#include "clang/Basic/LangStandard.h"
 #include "clang/Frontend/CompilerInstance.h"
 #include "clang/Sema/Lookup.h"
 #include "clang/Sema/Sema.h"
@@ -395,6 +396,17 @@ clang_Interpreter_loadLibrary(CXInterpreter I, const char* lib_stem,
 void clang_Interpreter_unloadLibrary(CXInterpreter I, const char* lib_stem) {
   auto* interp = getInterpreter(I);
   interp->getDynamicLibraryManager()->unloadLibrary(lib_stem);
+}
+
+CXInterpreterLanguage clang_Interpreter_getLanguage(CXInterpreter I) {
+  return static_cast<CXInterpreterLanguage>(
+      Cpp::GetLanguage(getInterpreter(I)));
+}
+
+CXInterpreterLanguageStandard
+clang_Interpreter_getLanguageStandard(CXInterpreter I) {
+  return static_cast<CXInterpreterLanguageStandard>(
+      Cpp::GetLanguageStandard(getInterpreter(I)));
 }
 
 CXString clang_Interpreter_searchLibrariesForSymbol(CXInterpreter I,
