@@ -49,6 +49,7 @@
 #include "llvm/ADT/SmallVector.h"
 #include "llvm/ADT/StringRef.h"
 #include "llvm/Demangle/Demangle.h"
+#include "clang/Basic/LangStandard.h"
 #if CLANG_VERSION_MAJOR >= 20
 #include "llvm/ExecutionEngine/Orc/AbsoluteSymbols.h"
 #include "llvm/ExecutionEngine/Orc/CoreContainers.h"
@@ -3487,8 +3488,14 @@ TInterp_t GetInterpreter() {
   return sInterpreters->back().Interpreter;
 }
 
-InterpreterLanguage GetLanguage() {
-  auto& LO = getInterp().getCI()->getLangOpts();
+InterpreterLanguage GetLanguage(TInterp_t I /*=nullptr*/) {
+  compat::Interpreter* interp;
+  if (I) {
+    interp = static_cast<compat::Interpreter*>(I);
+  } else {
+    interp = &getInterp();
+  }
+  const auto& LO = interp->getCI()->getLangOpts();
   switch (LO.LangStd) {
   case clang::LangStandard::lang_c89:
   case clang::LangStandard::lang_c94:
@@ -3524,8 +3531,14 @@ InterpreterLanguage GetLanguage() {
   }
 }
 
-InterpreterLanguageStandard GetLanguageStandard() {
-  auto& LO = getInterp().getCI()->getLangOpts();
+InterpreterLanguageStandard GetLanguageStandard(TInterp_t I /*=nullptr*/) {
+  compat::Interpreter* interp;
+  if (I) {
+    interp = static_cast<compat::Interpreter*>(I);
+  } else {
+    interp = &getInterp();
+  }
+  const auto& LO = interp->getCI()->getLangOpts();
   switch (LO.LangStd) {
   case clang::LangStandard::lang_cxx26:
   case clang::LangStandard::lang_gnucxx26:

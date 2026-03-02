@@ -750,10 +750,11 @@ CPPINTEROP_API bool ActivateInterpreter(TInterp_t I);
 CPPINTEROP_API TInterp_t GetInterpreter();
 
 /// Returns the programming language of the interpreter.
-CPPINTEROP_API InterpreterLanguage GetLanguage();
+CPPINTEROP_API InterpreterLanguage GetLanguage(TInterp_t I = nullptr);
 
 /// Returns the language standard of the interpreter.
-CPPINTEROP_API InterpreterLanguageStandard GetLanguageStandard();
+CPPINTEROP_API InterpreterLanguageStandard
+GetLanguageStandard(TInterp_t I = nullptr);
 
 /// Sets the Interpreter instance with an external interpreter, meant to
 /// be called by an external library that manages it's own interpreter.
