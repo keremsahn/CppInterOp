@@ -1406,6 +1406,14 @@ static void GetClassDecls(TCppScope_t klass,
 
   auto* CXXRD = dyn_cast<CXXRecordDecl>(D);
   compat::SynthesizingCodeRAII RAII(&getInterp());
+  if (auto* CTSD = dyn_cast<ClassTemplateSpecializationDecl>(CXXRD)) {
+    if (getSema().RequireCompleteType(
+            CTSD->getLocation(),
+            getSema().getASTContext().getCanonicalTagType(CTSD),
+            diag::err_incomplete_type))
+      return; // Unsuccesfull instantiaton
+  }
+
   if (CXXRD->hasDefinition())
     CXXRD = CXXRD->getDefinition();
   getSema().ForceDeclarationOfImplicitMembers(CXXRD);
@@ -3273,8 +3281,7 @@ int get_wrapper_code(compat::Interpreter& I, const FunctionDecl* FD,
     case FunctionDecl::TK_FunctionTemplate: {
       // This decl is actually a function template,
       // not a function at all.
-      llvm::errs() << "TClingCallFunc::make_wrapper"
-                   << ":"
+      llvm::errs() << "TClingCallFunc::make_wrapper" << ":"
                    << "Cannot make wrapper for a function template!";
       return 0;
     } break;
@@ -3300,8 +3307,7 @@ int get_wrapper_code(compat::Interpreter& I, const FunctionDecl* FD,
       }
       const FunctionDecl* Pattern = FD->getTemplateInstantiationPattern();
       if (!Pattern) {
-        llvm::errs() << "TClingCallFunc::make_wrapper"
-                     << ":"
+        llvm::errs() << "TClingCallFunc::make_wrapper" << ":"
                      << "Cannot make wrapper for a member function "
                         "instantiation with no pattern!";
         return 0;
@@ -3322,8 +3328,7 @@ int get_wrapper_code(compat::Interpreter& I, const FunctionDecl* FD,
         //       header file.
         break;
       } else if (!Pattern->hasBody()) {
-        llvm::errs() << "TClingCallFunc::make_wrapper"
-                     << ":"
+        llvm::errs() << "TClingCallFunc::make_wrapper" << ":"
                      << "Cannot make wrapper for a member function "
                         "instantiation with no body!";
         return 0;
@@ -3352,8 +3357,7 @@ int get_wrapper_code(compat::Interpreter& I, const FunctionDecl* FD,
       }
       const FunctionDecl* Pattern = FD->getTemplateInstantiationPattern();
       if (!Pattern) {
-        llvm::errs() << "TClingCallFunc::make_wrapper"
-                     << ":"
+        llvm::errs() << "TClingCallFunc::make_wrapper" << ":"
                      << "Cannot make wrapper for a function template"
                         "instantiation with no pattern!";
         return 0;
@@ -3376,8 +3380,7 @@ int get_wrapper_code(compat::Interpreter& I, const FunctionDecl* FD,
       }
       if (!GetFunctionAddress(FD)) {
         if (!Pattern->hasBody()) {
-          llvm::errs() << "TClingCallFunc::make_wrapper"
-                       << ":"
+          llvm::errs() << "TClingCallFunc::make_wrapper" << ":"
                        << "Cannot make wrapper for a function template "
                        << "instantiation with no body!";
           return 0;
@@ -3410,8 +3413,7 @@ int get_wrapper_code(compat::Interpreter& I, const FunctionDecl* FD,
       }
       const FunctionDecl* Pattern = FD->getTemplateInstantiationPattern();
       if (!Pattern) {
-        llvm::errs() << "TClingCallFunc::make_wrapper"
-                     << ":"
+        llvm::errs() << "TClingCallFunc::make_wrapper" << ":"
                      << "Cannot make wrapper for a dependent function template"
                         "instantiation with no pattern!";
         return 0;
@@ -3433,8 +3435,7 @@ int get_wrapper_code(compat::Interpreter& I, const FunctionDecl* FD,
         break;
       }
       if (!Pattern->hasBody()) {
-        llvm::errs() << "TClingCallFunc::make_wrapper"
-                     << ":"
+        llvm::errs() << "TClingCallFunc::make_wrapper" << ":"
                      << "Cannot make wrapper for a dependent function template"
                         "instantiation with no body!";
         return 0;
@@ -3446,8 +3447,7 @@ int get_wrapper_code(compat::Interpreter& I, const FunctionDecl* FD,
     default: {
       // Will only happen if clang implementation changes.
       // Protect ourselves in case that happens.
-      llvm::errs() << "TClingCallFunc::make_wrapper"
-                   << ":"
+      llvm::errs() << "TClingCallFunc::make_wrapper" << ":"
                    << "Unhandled template kind!";
       return 0;
     } break;
@@ -3475,8 +3475,7 @@ int get_wrapper_code(compat::Interpreter& I, const FunctionDecl* FD,
     InstantiateFunctionDefinition(FDmod);
 
     if (!FD->isDefined(Definition)) {
-      llvm::errs() << "TClingCallFunc::make_wrapper"
-                   << ":"
+      llvm::errs() << "TClingCallFunc::make_wrapper" << ":"
                    << "Failed to force template instantiation!";
       return 0;
     }
@@ -3487,13 +3486,11 @@ int get_wrapper_code(compat::Interpreter& I, const FunctionDecl* FD,
     case FunctionDecl::TK_NonTemplate: {
       // Ordinary function, not a template specialization.
       if (Definition->isDeleted()) {
-        llvm::errs() << "TClingCallFunc::make_wrapper"
-                     << ":"
+        llvm::errs() << "TClingCallFunc::make_wrapper" << ":"
                      << "Cannot make wrapper for a deleted function!";
         return 0;
       } else if (Definition->isLateTemplateParsed()) {
-        llvm::errs() << "TClingCallFunc::make_wrapper"
-                     << ":"
+        llvm::errs() << "TClingCallFunc::make_wrapper" << ":"
                      << "Cannot make wrapper for a late template parsed "
                         "function!";
         return 0;
@@ -3508,8 +3505,7 @@ int get_wrapper_code(compat::Interpreter& I, const FunctionDecl* FD,
     case FunctionDecl::TK_FunctionTemplate: {
       // This decl is actually a function template,
       // not a function at all.
-      llvm::errs() << "TClingCallFunc::make_wrapper"
-                   << ":"
+      llvm::errs() << "TClingCallFunc::make_wrapper" << ":"
                    << "Cannot make wrapper for a function template!";
       return 0;
     } break;
@@ -3518,14 +3514,12 @@ int get_wrapper_code(compat::Interpreter& I, const FunctionDecl* FD,
       // member function of a class template or of a member class
       // of a class template.
       if (Definition->isDeleted()) {
-        llvm::errs() << "TClingCallFunc::make_wrapper"
-                     << ":"
+        llvm::errs() << "TClingCallFunc::make_wrapper" << ":"
                      << "Cannot make wrapper for a deleted member function "
                         "of a specialization!";
         return 0;
       } else if (Definition->isLateTemplateParsed()) {
-        llvm::errs() << "TClingCallFunc::make_wrapper"
-                     << ":"
+        llvm::errs() << "TClingCallFunc::make_wrapper" << ":"
                      << "Cannot make wrapper for a late template parsed "
                         "member function of a specialization!";
         return 0;
@@ -3543,14 +3537,12 @@ int get_wrapper_code(compat::Interpreter& I, const FunctionDecl* FD,
       // function template.  Could be a namespace scope function or a
       // member function.
       if (Definition->isDeleted()) {
-        llvm::errs() << "TClingCallFunc::make_wrapper"
-                     << ":"
+        llvm::errs() << "TClingCallFunc::make_wrapper" << ":"
                      << "Cannot make wrapper for a deleted function "
                         "template specialization!";
         return 0;
       } else if (Definition->isLateTemplateParsed()) {
-        llvm::errs() << "TClingCallFunc::make_wrapper"
-                     << ":"
+        llvm::errs() << "TClingCallFunc::make_wrapper" << ":"
                      << "Cannot make wrapper for a late template parsed "
                         "function template specialization!";
         return 0;
@@ -3571,14 +3563,12 @@ int get_wrapper_code(compat::Interpreter& I, const FunctionDecl* FD,
       // template where at least some part of the function is
       // dependent on a template argument.
       if (Definition->isDeleted()) {
-        llvm::errs() << "TClingCallFunc::make_wrapper"
-                     << ":"
+        llvm::errs() << "TClingCallFunc::make_wrapper" << ":"
                      << "Cannot make wrapper for a deleted dependent function "
                         "template specialization!";
         return 0;
       } else if (Definition->isLateTemplateParsed()) {
-        llvm::errs() << "TClingCallFunc::make_wrapper"
-                     << ":"
+        llvm::errs() << "TClingCallFunc::make_wrapper" << ":"
                      << "Cannot make wrapper for a late template parsed "
                         "dependent function template specialization!";
         return 0;
@@ -3593,8 +3583,7 @@ int get_wrapper_code(compat::Interpreter& I, const FunctionDecl* FD,
     default: {
       // Will only happen if clang implementation changes.
       // Protect ourselves in case that happens.
-      llvm::errs() << "TClingCallFunc::make_wrapper"
-                   << ":"
+      llvm::errs() << "TClingCallFunc::make_wrapper" << ":"
                    << "Unhandled template kind!";
       return 0;
     } break;
@@ -3710,8 +3699,7 @@ JitCall::GenericCall make_wrapper(compat::Interpreter& I,
   if (wrapper) {
     WrapperStore.insert(std::make_pair(FD, wrapper));
   } else {
-    llvm::errs() << "TClingCallFunc::make_wrapper"
-                 << ":"
+    llvm::errs() << "TClingCallFunc::make_wrapper" << ":"
                  << "Failed to compile\n"
                  << "==== SOURCE BEGIN ====\n"
                  << wrapper_code << "\n"
@@ -3901,8 +3889,7 @@ static JitCall::DestructorCall make_dtor_wrapper(compat::Interpreter& interp,
   if (F) {
     DtorWrapperStore.insert(std::make_pair(D, F));
   } else {
-    llvm::errs() << "make_dtor_wrapper"
-                 << "Failed to compile\n"
+    llvm::errs() << "make_dtor_wrapper" << "Failed to compile\n"
                  << "==== SOURCE BEGIN ====\n"
                  << wrapper << "\n  ==== SOURCE END ====";
   }

@@ -71,9 +71,11 @@ TYPED_TEST(CPPINTEROP_TEST_MODE, FunctionReflection_GetClassMethods) {
   EXPECT_EQ(get_method_name(methods0[4]), "int A::f5(int i)");
   EXPECT_EQ(get_method_name(methods0[5]), "inline constexpr A::A()");
   EXPECT_EQ(get_method_name(methods0[6]), "inline constexpr A::A(const A &)");
-  EXPECT_EQ(get_method_name(methods0[7]), "inline constexpr A &A::operator=(const A &)");
+  EXPECT_EQ(get_method_name(methods0[7]),
+            "inline constexpr A &A::operator=(const A &)");
   EXPECT_EQ(get_method_name(methods0[8]), "inline constexpr A::A(A &&)");
-  EXPECT_EQ(get_method_name(methods0[9]), "inline constexpr A &A::operator=(A &&)");
+  EXPECT_EQ(get_method_name(methods0[9]),
+            "inline constexpr A &A::operator=(A &&)");
   EXPECT_EQ(get_method_name(methods0[10]), "inline A::~A()");
 
   std::vector<Cpp::TCppFunction_t> methods1;
@@ -274,7 +276,7 @@ TYPED_TEST(CPPINTEROP_TEST_MODE, FunctionReflection_GetFunctionsUsingName) {
   // This lambda can take in the scope and the name of the function
   // and returns the size of the vector returned by GetFunctionsUsingName
   auto get_number_of_funcs_using_name = [&](Cpp::TCppScope_t scope,
-          const std::string &name) {
+                                            const std::string& name) {
     auto Funcs = Cpp::GetFunctionsUsingName(scope, name);
 
     return Funcs.size();
@@ -326,6 +328,24 @@ TYPED_TEST(CPPINTEROP_TEST_MODE, FunctionReflection_GetClassDecls) {
   EXPECT_EQ(Cpp::GetName(methods[1]), Cpp::GetName(SubDecls[5]));
   EXPECT_EQ(Cpp::GetName(methods[2]), Cpp::GetName(SubDecls[7]));
   EXPECT_EQ(Cpp::GetName(methods[3]), Cpp::GetName(SubDecls[8]));
+
+  code = "class ForwardOnly;";
+  methods.clear();
+  Decls.clear();
+  GetAllTopLevelDecls(code, Decls);
+  Cpp::GetClassMethods(Decls[0], methods);
+  EXPECT_EQ(methods.size(), 0);
+
+  code = R"(template<typename T>
+    class Klass {
+      T value;
+    };
+    using KlassInt = Klass<int>;)";
+  methods.clear();
+  Decls.clear();
+  GetAllTopLevelDecls(code, Decls);
+  Cpp::GetClassMethods(Decls[1], methods);
+  EXPECT_EQ(methods.size(), 6);
 }
 
 TYPED_TEST(CPPINTEROP_TEST_MODE, FunctionReflection_GetFunctionTemplatedDecls) {
@@ -434,8 +454,10 @@ TYPED_TEST(CPPINTEROP_TEST_MODE, FunctionReflection_GetFunctionReturnType) {
             "const volatile N::C");
   EXPECT_EQ(Cpp::GetTypeAsString(Cpp::GetFunctionReturnType(Decls[11])),
             "NULL TYPE");
-  EXPECT_EQ(Cpp::GetTypeAsString(Cpp::GetFunctionReturnType(SubDecls[1])), "void");
-  EXPECT_EQ(Cpp::GetTypeAsString(Cpp::GetFunctionReturnType(SubDecls[2])), "int");
+  EXPECT_EQ(Cpp::GetTypeAsString(Cpp::GetFunctionReturnType(SubDecls[1])),
+            "void");
+  EXPECT_EQ(Cpp::GetTypeAsString(Cpp::GetFunctionReturnType(SubDecls[2])),
+            "int");
   EXPECT_EQ(
       Cpp::GetTypeAsString(Cpp::GetFunctionReturnType(TemplateSubDecls[1])),
       "char");
@@ -490,10 +512,10 @@ TYPED_TEST(CPPINTEROP_TEST_MODE, FunctionReflection_GetFunctionNumArgs) {
 
   GetAllTopLevelDecls(code, Decls);
   GetAllSubDecls(Decls[5], TemplateSubDecls);
-  EXPECT_EQ(Cpp::GetFunctionNumArgs(Decls[0]), (size_t) 0);
-  EXPECT_EQ(Cpp::GetFunctionNumArgs(Decls[1]), (size_t) 4);
-  EXPECT_EQ(Cpp::GetFunctionNumArgs(Decls[2]), (size_t) 4);
-  EXPECT_EQ(Cpp::GetFunctionNumArgs(Decls[3]), (size_t) 4);
+  EXPECT_EQ(Cpp::GetFunctionNumArgs(Decls[0]), (size_t)0);
+  EXPECT_EQ(Cpp::GetFunctionNumArgs(Decls[1]), (size_t)4);
+  EXPECT_EQ(Cpp::GetFunctionNumArgs(Decls[2]), (size_t)4);
+  EXPECT_EQ(Cpp::GetFunctionNumArgs(Decls[3]), (size_t)4);
   EXPECT_EQ(Cpp::GetFunctionNumArgs(Decls[4]), 0);
 
   EXPECT_EQ(Cpp::GetFunctionNumArgs(TemplateSubDecls[1]), 2);
@@ -525,10 +547,10 @@ TYPED_TEST(CPPINTEROP_TEST_MODE, FunctionReflection_GetFunctionRequiredArgs) {
   GetAllTopLevelDecls(code, Decls);
   GetAllSubDecls(Decls[5], TemplateSubDecls);
 
-  EXPECT_EQ(Cpp::GetFunctionRequiredArgs(Decls[0]), (size_t) 0);
-  EXPECT_EQ(Cpp::GetFunctionRequiredArgs(Decls[1]), (size_t) 4);
-  EXPECT_EQ(Cpp::GetFunctionRequiredArgs(Decls[2]), (size_t) 2);
-  EXPECT_EQ(Cpp::GetFunctionRequiredArgs(Decls[3]), (size_t) 0);
+  EXPECT_EQ(Cpp::GetFunctionRequiredArgs(Decls[0]), (size_t)0);
+  EXPECT_EQ(Cpp::GetFunctionRequiredArgs(Decls[1]), (size_t)4);
+  EXPECT_EQ(Cpp::GetFunctionRequiredArgs(Decls[2]), (size_t)2);
+  EXPECT_EQ(Cpp::GetFunctionRequiredArgs(Decls[3]), (size_t)0);
   EXPECT_EQ(Cpp::GetFunctionRequiredArgs(Decls[4]), 0);
 
   EXPECT_EQ(Cpp::GetFunctionRequiredArgs(TemplateSubDecls[1]), 2);
@@ -546,14 +568,20 @@ TYPED_TEST(CPPINTEROP_TEST_MODE, FunctionReflection_GetFunctionArgType) {
 
   GetAllTopLevelDecls(code, Decls);
   EXPECT_EQ(Cpp::GetTypeAsString(Cpp::GetFunctionArgType(Decls[0], 0)), "int");
-  EXPECT_EQ(Cpp::GetTypeAsString(Cpp::GetFunctionArgType(Decls[0], 1)), "double");
+  EXPECT_EQ(Cpp::GetTypeAsString(Cpp::GetFunctionArgType(Decls[0], 1)),
+            "double");
   EXPECT_EQ(Cpp::GetTypeAsString(Cpp::GetFunctionArgType(Decls[0], 2)), "long");
   EXPECT_EQ(Cpp::GetTypeAsString(Cpp::GetFunctionArgType(Decls[0], 3)), "char");
-  EXPECT_EQ(Cpp::GetTypeAsString(Cpp::GetFunctionArgType(Decls[1], 0)), "const int");
-  EXPECT_EQ(Cpp::GetTypeAsString(Cpp::GetFunctionArgType(Decls[1], 1)), "double[]");
-  EXPECT_EQ(Cpp::GetTypeAsString(Cpp::GetFunctionArgType(Decls[1], 2)), "long *");
-  EXPECT_EQ(Cpp::GetTypeAsString(Cpp::GetFunctionArgType(Decls[1], 3)), "char[4]");
-  EXPECT_EQ(Cpp::GetTypeAsString(Cpp::GetFunctionArgType(Decls[2], 0)), "NULL TYPE");
+  EXPECT_EQ(Cpp::GetTypeAsString(Cpp::GetFunctionArgType(Decls[1], 0)),
+            "const int");
+  EXPECT_EQ(Cpp::GetTypeAsString(Cpp::GetFunctionArgType(Decls[1], 1)),
+            "double[]");
+  EXPECT_EQ(Cpp::GetTypeAsString(Cpp::GetFunctionArgType(Decls[1], 2)),
+            "long *");
+  EXPECT_EQ(Cpp::GetTypeAsString(Cpp::GetFunctionArgType(Decls[1], 3)),
+            "char[4]");
+  EXPECT_EQ(Cpp::GetTypeAsString(Cpp::GetFunctionArgType(Decls[2], 0)),
+            "NULL TYPE");
 }
 
 TYPED_TEST(CPPINTEROP_TEST_MODE, FunctionReflection_FunctionTypes) {
@@ -693,7 +721,7 @@ TYPED_TEST(CPPINTEROP_TEST_MODE, FunctionReflection_ExistsFunctionTemplate) {
 
 TYPED_TEST(CPPINTEROP_TEST_MODE,
            FunctionReflection_InstantiateTemplateFunctionFromString) {
-  std::vector<const char*> interpreter_args = { "-include", "new" };
+  std::vector<const char*> interpreter_args = {"-include", "new"};
   TestFixture::CreateInterpreter(interpreter_args);
   std::string code = R"(#include <memory>)";
   Interp->process(code);
@@ -1053,14 +1081,16 @@ TYPED_TEST(CPPINTEROP_TEST_MODE,
   std::vector<Cpp::TCppFunction_t> candidates;
 
   for (auto decl : Decls)
-    if (Cpp::IsTemplatedFunction(decl)) candidates.push_back((Cpp::TCppFunction_t)decl);
+    if (Cpp::IsTemplatedFunction(decl))
+      candidates.push_back((Cpp::TCppFunction_t)decl);
 
   ASTContext& C = Interp->getCI()->getASTContext();
 
   std::vector<Cpp::TemplateArgInfo> args0;
   std::vector<Cpp::TemplateArgInfo> args1 = {
       C.getLValueReferenceType(C.IntTy).getAsOpaquePtr()};
-  std::vector<Cpp::TemplateArgInfo> args2 = {C.CharTy.getAsOpaquePtr(), C.FloatTy.getAsOpaquePtr()};
+  std::vector<Cpp::TemplateArgInfo> args2 = {C.CharTy.getAsOpaquePtr(),
+                                             C.FloatTy.getAsOpaquePtr()};
   std::vector<Cpp::TemplateArgInfo> args3 = {C.FloatTy.getAsOpaquePtr()};
 
   std::vector<Cpp::TemplateArgInfo> explicit_args0;
@@ -1084,7 +1114,8 @@ TYPED_TEST(CPPINTEROP_TEST_MODE,
   EXPECT_EQ(Cpp::GetFunctionSignature(func2),
             "template<> long MyTemplatedMethodClass::get_size<int>()");
   EXPECT_EQ(Cpp::GetFunctionSignature(func3),
-            "template<> long MyTemplatedMethodClass::get_size<char, float>(char a, float b)");
+            "template<> long MyTemplatedMethodClass::get_size<char, "
+            "float>(char a, float b)");
   EXPECT_EQ(Cpp::GetFunctionSignature(func4),
             "template<> long MyTemplatedMethodClass::get_size<int>(float a)");
   EXPECT_EQ(Cpp::GetFunctionSignature(func5),
@@ -1355,7 +1386,7 @@ TYPED_TEST(CPPINTEROP_TEST_MODE,
 }
 
 TYPED_TEST(CPPINTEROP_TEST_MODE, FunctionReflection_IsPublicMethod) {
-  std::vector<Decl *> Decls, SubDecls;
+  std::vector<Decl*> Decls, SubDecls;
   std::string code = R"(
     class C {
     public:
@@ -1382,7 +1413,7 @@ TYPED_TEST(CPPINTEROP_TEST_MODE, FunctionReflection_IsPublicMethod) {
 }
 
 TYPED_TEST(CPPINTEROP_TEST_MODE, FunctionReflection_IsProtectedMethod) {
-  std::vector<Decl *> Decls, SubDecls;
+  std::vector<Decl*> Decls, SubDecls;
   std::string code = R"(
     class C {
     public:
@@ -1407,7 +1438,7 @@ TYPED_TEST(CPPINTEROP_TEST_MODE, FunctionReflection_IsProtectedMethod) {
 }
 
 TYPED_TEST(CPPINTEROP_TEST_MODE, FunctionReflection_IsPrivateMethod) {
-  std::vector<Decl *> Decls, SubDecls;
+  std::vector<Decl*> Decls, SubDecls;
   std::string code = R"(
     class C {
     public:
@@ -1432,7 +1463,7 @@ TYPED_TEST(CPPINTEROP_TEST_MODE, FunctionReflection_IsPrivateMethod) {
 }
 
 TYPED_TEST(CPPINTEROP_TEST_MODE, FunctionReflection_IsConstructor) {
-  std::vector<Decl *> Decls, SubDecls;
+  std::vector<Decl*> Decls, SubDecls;
   std::string code = R"(
     class C {
     public:
@@ -1479,7 +1510,7 @@ TYPED_TEST(CPPINTEROP_TEST_MODE, FunctionReflection_IsConstructor) {
 }
 
 TYPED_TEST(CPPINTEROP_TEST_MODE, FunctionReflection_IsDestructor) {
-  std::vector<Decl *> Decls, SubDecls;
+  std::vector<Decl*> Decls, SubDecls;
   std::string code = R"(
     class C {
     public:
@@ -1504,7 +1535,7 @@ TYPED_TEST(CPPINTEROP_TEST_MODE, FunctionReflection_IsDestructor) {
 }
 
 TYPED_TEST(CPPINTEROP_TEST_MODE, FunctionReflection_IsStaticMethod) {
-  std::vector<Decl *> Decls, SubDecls;
+  std::vector<Decl*> Decls, SubDecls;
   std::string code = R"(
     class C {
       void f1() {}
@@ -1536,17 +1567,16 @@ TYPED_TEST(CPPINTEROP_TEST_MODE, FunctionReflection_GetFunctionAddress) {
 
   std::vector<Decl*> Decls;
   std::string code = "int f1(int i) { return i * i; }";
-  std::vector<const char*> interpreter_args = {"-include", "new", "-Xclang", "-iwithsysroot/include/compat"};
+  std::vector<const char*> interpreter_args = {"-include", "new", "-Xclang",
+                                               "-iwithsysroot/include/compat"};
 
   GetAllTopLevelDecls(code, Decls, /*filter_implicitGenerated=*/false,
                       interpreter_args);
 
   testing::internal::CaptureStdout();
   Interp->declare("#include <iostream>");
-  Interp->process(
-    "void * address = (void *) &f1; \n"
-    "std::cout << address; \n"
-    );
+  Interp->process("void * address = (void *) &f1; \n"
+                  "std::cout << address; \n");
 
   std::string output = testing::internal::GetCapturedStdout();
   std::stringstream address;
@@ -1593,7 +1623,8 @@ TYPED_TEST(CPPINTEROP_TEST_MODE, FunctionReflection_IsVirtualMethod) {
 }
 
 TYPED_TEST(CPPINTEROP_TEST_MODE, FunctionReflection_JitCallAdvanced) {
-#if CLANG_VERSION_MAJOR == 20 && defined(CPPINTEROP_USE_CLING) && defined(_WIN32)
+#if CLANG_VERSION_MAJOR == 20 && defined(CPPINTEROP_USE_CLING) &&              \
+    defined(_WIN32)
   GTEST_SKIP() << "Test fails with Cling on Windows";
 #endif
 #ifdef EMSCRIPTEN
@@ -1619,8 +1650,8 @@ TYPED_TEST(CPPINTEROP_TEST_MODE, FunctionReflection_JitCallAdvanced) {
 
   GetAllTopLevelDecls(code, Decls, /*filter_implicitGenerated=*/false,
                       interpreter_args);
-  auto *CtorD
-    = (clang::CXXConstructorDecl*)Cpp::GetDefaultConstructor(Decls[0]);
+  auto* CtorD =
+      (clang::CXXConstructorDecl*)Cpp::GetDefaultConstructor(Decls[0]);
   auto Ctor = Cpp::MakeFunctionCallable(CtorD);
   EXPECT_TRUE((bool)Ctor) << "Failed to build a wrapper for the ctor";
   void* object = nullptr;
@@ -1738,7 +1769,8 @@ TYPED_TEST(CPPINTEROP_TEST_MODE, FunctionReflection_GetFunctionCallWrapper) {
   GTEST_SKIP() << "Test fails for Emscipten builds";
 #endif
 #if defined(CPPINTEROP_USE_CLING) && defined(_WIN32)
-  GTEST_SKIP() << "Disabled, invoking functions containing printf does not work with Cling on Windows";
+  GTEST_SKIP() << "Disabled, invoking functions containing printf does not "
+                  "work with Cling on Windows";
 #endif
   if (TypeParam::isOutOfProcess)
     GTEST_SKIP() << "Test fails for OOP JIT builds";
@@ -1768,8 +1800,7 @@ TYPED_TEST(CPPINTEROP_TEST_MODE, FunctionReflection_GetFunctionCallWrapper) {
     }
   )");
 
-  Cpp::JitCall FCI1 =
-      Cpp::MakeFunctionCallable(Decls[0]);
+  Cpp::JitCall FCI1 = Cpp::MakeFunctionCallable(Decls[0]);
   EXPECT_TRUE(FCI1.getKind() == Cpp::JitCall::kGenericCall);
   Cpp::JitCall FCI2 = Cpp::MakeFunctionCallable(Cpp::GetNamed("f2"));
   EXPECT_TRUE(FCI2.getKind() == Cpp::JitCall::kGenericCall);
@@ -1782,8 +1813,8 @@ TYPED_TEST(CPPINTEROP_TEST_MODE, FunctionReflection_GetFunctionCallWrapper) {
 
   int i = 9, ret1, ret3, ret4;
   std::string s("Hello World!\n");
-  void *args0[1] = { (void *) &i };
-  void *args1[1] = { (void *) &s };
+  void* args0[1] = {(void*)&i};
+  void* args1[1] = {(void*)&s};
 
   FCI1.Invoke(&ret1, {args0, /*args_size=*/1});
   EXPECT_EQ(ret1, i * i);
@@ -1819,9 +1850,8 @@ TYPED_TEST(CPPINTEROP_TEST_MODE, FunctionReflection_GetFunctionCallWrapper) {
   )");
 
   clang::NamedDecl* ClassC = (clang::NamedDecl*)Cpp::GetNamed("C");
-  auto *CtorD = (clang::CXXConstructorDecl*)Cpp::GetDefaultConstructor(ClassC);
-  auto FCI_Ctor =
-    Cpp::MakeFunctionCallable(CtorD);
+  auto* CtorD = (clang::CXXConstructorDecl*)Cpp::GetDefaultConstructor(ClassC);
+  auto FCI_Ctor = Cpp::MakeFunctionCallable(CtorD);
   void* object = nullptr;
   testing::internal::CaptureStdout();
   FCI_Ctor.Invoke((void*)&object);
@@ -1829,9 +1859,8 @@ TYPED_TEST(CPPINTEROP_TEST_MODE, FunctionReflection_GetFunctionCallWrapper) {
   EXPECT_EQ(output, "Default Ctor Called\n");
   EXPECT_TRUE(object != nullptr);
 
-  auto *DtorD = (clang::CXXDestructorDecl*)Cpp::GetDestructor(ClassC);
-  auto FCI_Dtor =
-    Cpp::MakeFunctionCallable(DtorD);
+  auto* DtorD = (clang::CXXDestructorDecl*)Cpp::GetDestructor(ClassC);
+  auto FCI_Dtor = Cpp::MakeFunctionCallable(DtorD);
   testing::internal::CaptureStdout();
   FCI_Dtor.Invoke(object);
   output = testing::internal::GetCapturedStdout();
@@ -2741,8 +2770,8 @@ TYPED_TEST(CPPINTEROP_TEST_MODE, FunctionReflection_DestructArray) {
   testing::internal::CaptureStdout();
 
   // destruct the rest
-  auto *new_head = reinterpret_cast<void*>(reinterpret_cast<char*>(where) +
-                                          (Cpp::SizeOf(scope) * 3));
+  auto* new_head = reinterpret_cast<void*>(reinterpret_cast<char*>(where) +
+                                           (Cpp::SizeOf(scope) * 3));
   EXPECT_TRUE(Cpp::Destruct(new_head, scope, false, 2));
 
   output = testing::internal::GetCapturedStdout();
@@ -2769,7 +2798,7 @@ TYPED_TEST(CPPINTEROP_TEST_MODE, FunctionReflection_UndoTest) {
 #ifdef _WIN32
   GTEST_SKIP() << "Disabled on Windows. Needs fixing.";
 #endif
-#if CLANG_VERSION_MAJOR == 20 && defined(CPPINTEROP_USE_CLING) &&           \
+#if CLANG_VERSION_MAJOR == 20 && defined(CPPINTEROP_USE_CLING) &&              \
     defined(__APPLE__)
   GTEST_SKIP() << "Disabled on osx for cling based on llvm 20. Needs fixing.";
 #endif
