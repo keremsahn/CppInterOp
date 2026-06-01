@@ -518,6 +518,68 @@ TYPED_TEST(CPPINTEROP_TEST_MODE, FunctionReflection_GetFunctionReturnType) {
       "double");
 }
 
+TYPED_TEST(CPPINTEROP_TEST_MODE, FunctionReflection_IsAllocator) {
+  std::vector<Decl*> Decls;
+  std::string code = R"(
+    class Klass{
+      int val;
+    };
+    __attribute__((ownership_returns(malloc)))
+    Klass* Allocator(){
+      Klass* obj = new Klass;
+      return obj;
+    }
+    Klass* __attribute__((malloc)) Allocator2(){
+      Klass* obj = new Klass;
+      return obj;
+    }
+    void foo();
+    )";
+  GetAllTopLevelDecls(code, Decls, true);
+  EXPECT_TRUE(Cpp::IsAllocator(Decls[1]));
+  EXPECT_TRUE(Cpp::IsAllocator(Decls[2]));
+  EXPECT_FALSE(Cpp::IsAllocator(Decls[3]));
+
+  code = R"(
+  #include <stdlib.h>
+    void test(){
+      //Do Nothing
+    }
+  )";
+  TestFixture::CreateInterpreter({"-xc", "-std=c11"});
+  Interp->process(code);
+  auto mallocDecl = Cpp::GetNamed("malloc");
+  EXPECT_TRUE(Cpp::IsAllocator(Cpp::ConstFuncRef{mallocDecl.data}));
+}
+
+TYPED_TEST(CPPINTEROP_TEST_MODE, FunctionReflection_IsDeallocator) {
+  std::vector<Decl*> Decls;
+  std::string code = R"(
+    class Klass{
+      int val;
+    };
+    __attribute__((ownership_takes(malloc, 1)))
+    void Deallocator(Klass* arg){
+      delete arg;
+    }
+    void foo();
+    )";
+  GetAllTopLevelDecls(code, Decls, true);
+  EXPECT_TRUE(Cpp::IsDeallocator(Decls[1]));
+  EXPECT_FALSE(Cpp::IsDeallocator(Decls[2]));
+
+  code = R"(
+  #include <stdlib.h>
+    void test(){
+      //Do Nothing
+    }
+  )";
+  TestFixture::CreateInterpreter({"-xc", "-std=c11"});
+  Interp->process(code);
+  auto freeDecl = Cpp::GetNamed("free");
+  EXPECT_TRUE(Cpp::IsDeallocator(Cpp::ConstFuncRef{freeDecl.data}));
+}
+
 TYPED_TEST(CPPINTEROP_TEST_MODE, FunctionReflection_GetFunctionNumArgs) {
   std::vector<Decl*> Decls, TemplateSubDecls;
   std::string code = R"(

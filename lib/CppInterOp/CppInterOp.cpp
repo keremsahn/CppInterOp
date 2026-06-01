@@ -1586,6 +1586,47 @@ TypeRef GetFunctionReturnType(ConstFuncRef func) {
   return INTEROP_RETURN(nullptr);
 }
 
+bool IsAllocator(ConstFuncRef Fn) {
+  INTEROP_TRACE(Fn);
+  if (Fn) {
+    if (const auto* D = unwrap<clang::Decl>(Fn)) {
+      if (const auto* FD = dyn_cast<FunctionDecl>(D)) {
+        if (FD->getBuiltinID() == Builtin::ID::BImalloc)
+          return INTEROP_RETURN(true);
+        if (const auto* FDA = FD->getAttr<RestrictAttr>()) {
+          if (FDA->getSemanticSpelling() != RestrictAttr::Declspec_restrict)
+            return INTEROP_RETURN(true);
+        }
+
+        if (const auto* FDA = FD->getAttr<OwnershipAttr>()) {
+          if (FDA->getOwnKind() == OwnershipAttr::Returns)
+            return INTEROP_RETURN(true);
+        }
+      }
+    }
+  }
+
+  return INTEROP_RETURN(false);
+}
+
+bool IsDeallocator(ConstFuncRef Fn) {
+  INTEROP_TRACE(Fn);
+  if (Fn) {
+    if (const auto* D = unwrap<clang::Decl>(Fn)) {
+      if (const auto* FD = dyn_cast<FunctionDecl>(D)) {
+        if (FD->getBuiltinID() == Builtin::ID::BIfree)
+          return INTEROP_RETURN(true);
+        if (const auto* FDA = FD->getAttr<OwnershipAttr>()) {
+          if (FDA->getOwnKind() == OwnershipAttr::Takes)
+            return INTEROP_RETURN(true);
+        }
+      }
+    }
+  }
+
+  return INTEROP_RETURN(false);
+}
+
 bool IsFunctionProtoType(ConstTypeRef TyRef) {
   INTEROP_TRACE(TyRef);
   QualType QT = QualType::getFromOpaquePtr(TyRef.data);
